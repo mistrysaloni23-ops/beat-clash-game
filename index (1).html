@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#080b18" />
+  <meta name="description" content="Beat Clash: Rhythm Rivals — local two-player neon rhythm game. Seven levels, endless survival and quick battles." />
+  <title>Beat Clash — Rhythm Rivals</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #080a17; --surface: #12162c; --line: #2a3256;
+      --cyan: #4cdeff; --pink: #ff6fc8; --gold: #ffca78;
+      --muted: #9fa9cf; --white: #f7f8ff;
+      font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html { min-height: 100%; background: var(--bg); }
+    body { margin: 0; min-height: 100vh; color: var(--white); background:
+      radial-gradient(ellipse 45% 32% at 16% 0%, #21325c88 0%, transparent 85%),
+      radial-gradient(ellipse 48% 30% at 94% 6%, #50204e77 0%, transparent 85%),
+      linear-gradient(180deg, #0c1020 0%, #080a17 100%); }
+    button, input, select { font: inherit; }
+    button { cursor: pointer; }
+    button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid #fff9; outline-offset: 3px; }
+    button:disabled { opacity: .45; cursor: not-allowed; }
+    .app { max-width: 1170px; padding: 22px 24px 18px; margin: auto; }
+    .topbar { display: flex; align-items: center; justify-content: space-between; gap: 15px; margin-bottom: 21px; }
+    .brand { display: flex; align-items: center; gap: 13px; }
+    .brand-symbol { width: 45px; height: 45px; display: grid; place-items: center; border: 1px solid #6bdcf8aa; border-radius: 14px;
+      background: linear-gradient(140deg, #163f55, #3c1c5d); box-shadow: 0 0 30px #31bff32e; font-size: 24px; transform: rotate(-7deg); }
+    .brand-name { font-size: 19px; font-weight: 900; letter-spacing: .12em; line-height: 1; }
+    .brand-name span { color: var(--cyan); }
+    .brand-sub { font-size: 10px; letter-spacing: .29em; margin-top: 8px; color: var(--muted); font-weight: 700; }
+    .top-actions { display: flex; gap: 9px; align-items: center; }
+    .icon-btn { min-height: 40px; padding: 0 14px; border-radius: 12px; color: #dce3fd; background: #151b32; border: 1px solid #303955; font-size: 12px; font-weight: 800; }
+    .icon-btn:hover { border-color: #6576a6; }
+    .eyebrow { color: #a4b7d5; text-align: center; font-size: 10px; font-weight: 900; letter-spacing: .25em; margin-bottom: 8px; }
+    h1 { margin: 0 0 9px; font-size: clamp(24px, 3.4vw, 39px); line-height: 1.08; letter-spacing: -.035em; text-align: center; font-weight: 950; }
+    h1 strong { color: var(--cyan); } h1 em { color: var(--pink); font-style: normal; }
+    .hero-description { text-align: center; font-size: 12px; color: var(--muted); margin: 0 auto 19px; }
+    .game-shell { border: 1px solid #394360; border-radius: 23px; padding: 13px; overflow: hidden; position: relative;
+      background: linear-gradient(160deg, #171d35dd, #0d1225ee); box-shadow: 0 27px 80px #03050cba, inset 0 1px #ffffff12; }
+    .scoreboard { display: grid; grid-template-columns: 1fr minmax(105px, .63fr) 1fr; gap: 11px; align-items: stretch; }
+    .player-card { padding: 11px 17px; border-radius: 12px; display: flex; align-items: center; justify-content: space-between; gap: 12px; overflow: hidden; background: #102d3d66; border: 1px solid #3281a041; }
+    .player-card.pink { background: #391c3866; border-color: #b54e9c40; flex-direction: row-reverse; text-align: right; }
+    .score-label { font-size: 10px; color: #8adcf9; font-weight: 900; letter-spacing: .15em; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px; }
+    .pink .score-label { color: #ff9bd5; }
+    .score-value { font-weight: 950; font-size: clamp(25px, 3.4vw, 38px); line-height: 1.07; letter-spacing: -.04em; font-variant-numeric: tabular-nums; }
+    .score-meta { font-size: 10px; color: #a7b2d4; font-weight: 750; white-space: nowrap; }
+    .combo-bubble { border: 1px solid #5bd2f950; background: #37c7f512; color: #b0f1ff; border-radius: 9px; text-align: center; padding: 8px; min-width: 68px; font-size: 9px; line-height: 1.7; font-weight: 900; }
+    .pink .combo-bubble { border-color: #fa79c855; background: #f357ad12; color: #ffb1de; }
+    .combo-bubble b { display: block; font-size: 20px; line-height: 1.1; font-variant-numeric: tabular-nums; }
+    .clock { display: flex; flex-direction: column; justify-content: center; align-items: center; border: 1px solid #343d63; border-radius: 12px; background: #171c36; }
+    .clock-top { font-size: 9px; font-weight: 900; color: #b8b3fa; letter-spacing: .18em; }
+    .clock-value { font-size: clamp(24px, 3vw, 37px); letter-spacing: -.03em; font-weight: 950; line-height: 1.3; font-variant-numeric: tabular-nums; }
+    .clock-bottom { font-size: 9px; color: #868eb8; font-weight: 800; letter-spacing: .1em; }
+    .momentum { padding: 11px 4px 10px; display: flex; align-items: center; gap: 13px; }
+    .momentum-label { font-size: 9px; font-weight: 900; letter-spacing: .12em; color: #81dff7; white-space: nowrap; }
+    .momentum-label.right { color: #f9a4d9; }
+    .momentum-track { flex: 1; position: relative; height: 10px; border-radius: 20px; border: 1px solid #ffffff1a; overflow: hidden; background: #c3468f; }
+    .momentum-fill { height: 100%; width: 50%; background: linear-gradient(90deg, #119be9, #58dfff); transition: width 170ms; }
+    .momentum-marker { height: 16px; width: 3px; background: white; border-radius: 8px; box-shadow: 0 0 9px white; position: absolute; top: -4px; left: 50%; transition: left 170ms; }
+    .arena { height: clamp(350px, 52vw, 510px); position: relative; overflow: hidden; border-radius: 13px; background: #0a1020; border: 1px solid #344064; isolation: isolate; }
+    canvas { width: 100%; height: 100%; display: block; touch-action: none; user-select: none; -webkit-user-select: none; }
+    .player-zone-label { pointer-events: none; position: absolute; top: 14px; left: 0; right: 0; display: flex; justify-content: center; gap: 25%; color: #c4cbe4; font-size: 10px; font-weight: 900; letter-spacing: .2em; opacity: .7; }
+    .screen { position: absolute; inset: 0; z-index: 4; display: grid; place-items: center; padding: 12px; background: #080d1bd5; backdrop-filter: blur(8px); overflow: auto; }
+    .screen[hidden] { display: none; }
+    .dialog { width: min(100%, 490px); padding: 23px 25px; text-align: center; border-radius: 20px; border: 1px solid #6a679b66;
+      background: linear-gradient(165deg, #242344f5, #12152cf5); box-shadow: 0 24px 55px #030516bb; }
+    .dialog .pill { display: inline-block; background: #ffffff10; color: #dbd1ff; border: 1px solid #8d84c644; border-radius: 30px; padding: 7px 13px; font-size: 9px; font-weight: 950; letter-spacing: .2em; }
+    .dialog h2 { font-size: clamp(23px, 3.8vw, 35px); margin: 11px 0 7px; letter-spacing: -.04em; line-height: 1.08; }
+    .dialog p { color: #adb6d8; font-size: 12px; line-height: 1.6; margin: 0 auto 16px; max-width: 365px; }
+    .names { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; text-align: left; margin-bottom: 13px; }
+    .field { min-width: 0; }
+    .field label { display: block; text-transform: uppercase; color: #a1cae9; letter-spacing: .14em; font-size: 10px; font-weight: 900; margin-bottom: 7px; }
+    .field:nth-child(2) label { color: #ffc0e6; }
+    .field input, .options select { width: 100%; min-height: 40px; color: white; background: #10162b; border: 1px solid #444c72; border-radius: 9px; padding: 0 10px; font-size: 13px; font-weight: 800; }
+    .options { display: flex; align-items: end; gap: 11px; margin-bottom: 17px; text-align: left; }
+    .options > div { flex: 1; }
+    .options label { display: block; color: #abb8d4; font-size: 9px; font-weight: 900; letter-spacing: .12em; margin-bottom: 7px; text-transform: uppercase; }
+    .primary { display: inline-flex; justify-content: center; align-items: center; gap: 9px; width: 100%; min-height: 46px; border: 0; border-radius: 11px; color: #071322; background: linear-gradient(115deg, #53dfff, #a0f5ff); box-shadow: 0 7px 28px #39c0f44d; font-weight: 950; letter-spacing: .09em; font-size: 12px; }
+    .primary:hover { filter: brightness(1.12); }
+    .secondary { display: inline-flex; justify-content: center; align-items: center; width: 100%; min-height: 42px; background: #ffffff12; color: white; border: 1px solid #69729766; border-radius: 11px; font-weight: 850; font-size: 12px; }
+    .dialog small { color: #8693b9; display: block; font-size: 10px; margin-top: 11px; line-height: 1.5; }
+    .buttons-row { display: flex; gap: 10px; margin-top: 12px; }
+    .buttons-row > * { flex: 1; }
+    .result-score { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 15px 0 17px; }
+    .result-score div { padding: 12px; background: #ffffff09; border: 1px solid #ffffff18; border-radius: 11px; }
+    .result-score span { display: block; font-size: 10px; color: #aab5d0; font-weight: 900; overflow: hidden; text-overflow: ellipsis; }
+    .result-score b { display: block; margin-top: 5px; font-size: 25px; font-variant-numeric: tabular-nums; }
+    .underarena { display: grid; grid-template-columns: 1fr auto 1fr; gap: 12px; align-items: center; padding: 12px 6px 0; }
+    .controls { display: flex; align-items: center; gap: 7px; }
+    .controls.p2 { justify-content: end; }
+    .key { display: grid; place-items: center; height: 31px; width: 33px; border-radius: 7px; font-size: 12px; font-weight: 950;
+      background: #192b40; color: #98e8fd; border: 1px solid #33728d; box-shadow: inset 0 -3px #0003; }
+    .p2 .key { background: #3a203c; color: #ffa4d8; border-color: #854574; }
+    .control-hint { font-size: 10px; color: #929ab9; margin-left: 5px; font-weight: 750; }
+    .center-hint { text-align: center; color: #a4accb; font-size: 10px; font-weight: 800; line-height: 1.4; }
+    .instructions { display: flex; justify-content: center; gap: 22px; flex-wrap: wrap; margin: 18px 0 8px; color: #96a2c3; font-size: 11px; }
+    .instructions span { display: inline-flex; gap: 6px; align-items: center; }
+    .instructions b { color: #eef2ff; }
+    .page-footer { text-align: center; font-size: 10px; color: #647092; padding-top: 10px; }
+    .particles { pointer-events:none; }
+    @media (max-width: 650px) {
+      .app { padding: 12px 10px 15px; } .topbar { margin-bottom: 11px; }
+      .brand-symbol { width: 36px; height: 36px; border-radius: 11px; font-size: 19px; }
+      .brand { gap: 8px; } .brand-name { font-size: 14px; } .brand-sub { font-size: 7px; letter-spacing: .2em; margin-top: 6px; }
+      .icon-btn { padding: 0 9px; min-height: 34px; font-size: 11px; }
+      h1 { font-size: 24px; } .hero-description { margin-bottom: 12px; font-size: 10px; }
+      .eyebrow { font-size: 8px; margin-bottom: 5px; }
+      .game-shell { padding: 7px; border-radius: 15px; }
+      .scoreboard { gap: 5px; grid-template-columns: 1fr 85px 1fr; }
+      .player-card { padding: 8px; gap: 2px; } .score-value { font-size: 22px; }
+      .score-label { font-size: 8px; max-width: 85px; } .score-meta { font-size: 8px; }
+      .combo-bubble { min-width: 32px; padding: 5px 3px; font-size: 7px; } .combo-bubble b { font-size: 13px; }
+      .clock-top, .clock-bottom { font-size: 7px; } .clock-value { font-size: 21px; }
+      .momentum { padding: 7px 1px 7px; gap: 5px; } .momentum-label { font-size: 7px; }
+      .arena { height: clamp(325px, 75svh, 550px); }
+      .dialog { padding: 16px 14px; } .dialog h2 { margin-top: 8px; }
+      .dialog p { font-size: 11px; margin-bottom: 10px; } .field input, .options select { min-height: 37px; }
+      .underarena { grid-template-columns: 1fr 1fr; } .center-hint { display: none; }
+      .control-hint { display: none; } .key { height: 27px; width: 25px; font-size: 10px; }
+      .instructions { gap: 12px; font-size: 9px; } .page-footer { font-size: 9px; }
+    }
+    @media (max-height: 540px) and (orientation: landscape) {
+      .app { padding: 7px 12px; max-width: 1050px; }
+      .topbar { margin-bottom: 4px; } .brand-symbol { width: 30px; height: 30px; } .brand-name { font-size: 13px; } .brand-sub { display: none; }
+      .eyebrow, h1, .hero-description, .instructions, .page-footer { display: none; }
+      .game-shell { padding: 5px; } .player-card { padding: 5px 10px; } .score-value { font-size: 21px; }
+      .combo-bubble { padding: 4px 8px; } .momentum { padding: 3px 1px; }
+      .arena { height: calc(100svh - 138px); min-height: 155px; }
+      .underarena { padding-top: 5px; } .key { height: 22px; width: 27px; }
+      .dialog { padding: 9px 15px; } .dialog .pill { padding: 4px 8px; } .dialog h2 { font-size: 22px; margin: 5px 0; }
+      .dialog p { font-size: 10px; margin-bottom: 6px; } .names { margin-bottom: 7px; } .options { margin-bottom: 8px; }
+      .field input, .options select { min-height: 32px; } .field label, .options label { margin-bottom: 3px; }
+      .primary { min-height: 35px; } .secondary { min-height: 33px; } .dialog small { margin-top: 5px; }
+    }
+    @media (max-height:540px) and (orientation:landscape){
+      #menuScreen .dialog {padding:8px 13px;}
+      #menuScreen .dialog .pill, #menuScreen .dialog h2, #menuScreen .dialog small,
+      #menuScreen .mode-explainer, #menuScreen .level-note {display:none!important;}
+      #menuScreen .mode-picker {margin:0 0 5px;}
+      #menuScreen .mode-card {min-height:27px;padding:3px;}
+      #menuScreen .names {margin:0 0 4px;}
+      #menuScreen .names label {margin-bottom:2px;font-size:8px;}
+      #menuScreen .field input, #menuScreen .options select {min-height:29px;}
+      #menuScreen .mode-options {margin-bottom:5px;}
+      #menuScreen .primary {min-height:33px;}
+    }
+    @media (prefers-reduced-motion: reduce) { .momentum-fill, .momentum-marker { transition: none; } }
+
+    .mode-picker {display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:12px 0 10px;text-align:left;}
+    .mode-card {min-width:0;border-radius:10px;border:1px solid #495573;background:#10172d;color:#dae7ff;padding:10px 7px;text-align:center;display:flex;flex-direction:column;gap:4px;align-items:center;justify-content:center;}
+    .mode-card strong {font-size:11px;line-height:1.1;}
+    .mode-card span {color:#a7b2d7;font-size:9px;line-height:1.3;}
+    .mode-card.chosen {border-color:#66e8ff;color:#fff;background:linear-gradient(145deg,#15506d,#343056);box-shadow:inset 0 0 18px #49cfff28;}
+    .mode-card:focus-visible {outline:2px solid #fff;outline-offset:2px;}
+    .mode-explainer {font-size:10px!important;min-height:17px;margin:0 0 8px!important;line-height:1.35!important;}
+    .level-note {font-size:10px;color:#bcafea;margin-top:4px;text-align:left;}
+    .mode-options {margin-bottom:12px;}
+    .mode-options[hidden],.screen [hidden],.player-card [hidden],#nextLevelBtn[hidden] {display:none!important;}
+    .player-lives {font-size:10px;font-weight:900;color:#ff8aa5;margin-top:5px;white-space:nowrap;}
+    .result-sub {color:#dbbeff!important;margin:5px auto 0!important;font-weight:800;letter-spacing:.06em;font-size:10px!important;}
+    #nextLevelBtn {margin-bottom:9px;background:linear-gradient(115deg,#f6b4ff,#ff73c9);}
+    .small-help {color:#aab7d6;font-size:10px;line-height:1.3;}
+    @media(max-width:600px){.mode-card {padding:7px 3px;}.mode-card strong {font-size:9px;}.mode-card span{font-size:8px;}.mode-picker{gap:5px;margin:8px 0;}.dialog{padding:15px 12px;}.dialog h2 {font-size:24px;}}
+    @media(max-height:540px) and (orientation:landscape){.mode-picker {margin:5px 0;}.mode-card{padding:4px;}.mode-card span{display:none;}.mode-options{margin-bottom:5px;}.mode-explainer{display:none;}.dialog .names{margin-bottom:3px;}.dialog{width:min(98%,660px);}}
+  </style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brand"><div class="brand-symbol" aria-hidden="true">♫</div><div><div class="brand-name">BEAT <span>CLASH</span></div><div class="brand-sub">RHYTHM RIVALS</div></div></div>
+    <div class="top-actions">
+      <button id="soundBtn" class="icon-btn" type="button" aria-label="Mute sounds">♫ SOUND ON</button>
+      <button id="pauseBtn" class="icon-btn" type="button" hidden>Ⅱ PAUSE</button>
+    </div>
+  </header>
+  <div class="eyebrow">TWO PLAYERS. ONE SCREEN. ZERO MERCY.</div>
+  <h1>FEEL THE <strong>RHYTHM.</strong> <em>OWN THE BEAT.</em></h1>
+  <p class="hero-description">Tap the falling neon tiles when they reach the glowing line. Build a combo. Beat your rival.</p>
+  <main class="game-shell">
+    <div class="scoreboard" aria-live="off">
+      <div class="player-card"><div><div class="score-label" id="p1Name">PLAYER 1</div><div class="score-value" id="p1Score">0</div><div class="score-meta" id="p1Accuracy">— ACCURACY</div><div class="player-lives" id="p1Lives" hidden>♥ 5 LIVES</div></div><div class="combo-bubble"><b id="p1Combo">0</b>COMBO</div></div>
+      <div class="clock"><div class="clock-top" id="hudModeLabel">QUICK BATTLE</div><div class="clock-value" id="timeLeft">1:00</div><div class="clock-bottom" id="clockStatus">GET READY</div></div>
+      <div class="player-card pink"><div><div class="score-label" id="p2Name">PLAYER 2</div><div class="score-value" id="p2Score">0</div><div class="score-meta" id="p2Accuracy">— ACCURACY</div><div class="player-lives" id="p2Lives" hidden>♥ 5 LIVES</div></div><div class="combo-bubble"><b id="p2Combo">0</b>COMBO</div></div>
+    </div>
+    <div class="momentum"><span class="momentum-label">P1 ENERGY</span><div class="momentum-track"><div class="momentum-fill" id="momentumFill"></div><div class="momentum-marker" id="momentumMarker"></div></div><span class="momentum-label right">P2 ENERGY</span></div>
+    <div class="arena" id="arena">
+      <canvas id="board" aria-label="Split-screen rhythm board. Player 1 left three lanes, Player 2 right three lanes."></canvas>
+      <div id="menuScreen" class="screen">
+        <div class="dialog">
+          <span class="pill">⚡ THREE WAYS TO CLASH</span>
+          <h2>CHOOSE YOUR <span style="color:#65e6ff">BATTLE.</span></h2>
+          <div class="mode-picker" role="group" aria-label="Choose game mode">
+            <button class="mode-card chosen" data-mode="levels" type="button" aria-pressed="true"><strong>🏆 LEVELS</strong><span>7 stages · Unlock new moves</span></button>
+            <button class="mode-card" data-mode="endless" type="button" aria-pressed="false"><strong>♾ ENDLESS</strong><span>5 lives · Survive the chaos</span></button>
+            <button class="mode-card" data-mode="quick" type="button" aria-pressed="false"><strong>⚡ QUICK</strong><span>Classic timed duel</span></button>
+          </div>
+          <p class="mode-explainer" id="modeDescription">Complete each level to unlock the next.</p>
+          <div class="names">
+            <div class="field"><label for="name1">● Player 1 · Cyan</label><input id="name1" maxlength="14" value="Player 1" autocomplete="off" /></div>
+            <div class="field"><label for="name2">● Player 2 · Pink</label><input id="name2" maxlength="14" value="Player 2" autocomplete="off" /></div>
+          </div>
+          <div id="levelOptions" class="mode-options"><div class="options" style="margin-bottom:0"><div><label for="levelSelect">Select unlocked level</label><select id="levelSelect"></select></div></div><div class="level-note" id="unlockedInfo">1 / 7 unlocked · Progress saves on this browser</div></div>
+          <div id="quickOptions" class="mode-options" hidden><div class="options" style="margin-bottom:0"><div><label for="speed">Difficulty</label><select id="speed"><option value="92">Chill · 92 BPM</option><option value="116" selected>Pulse · 116 BPM</option><option value="145">Turbo · 145 BPM</option></select></div><div><label for="duration">Round duration</label><select id="duration"><option value="45">45 seconds</option><option value="60" selected>60 seconds</option><option value="90">90 seconds</option></select></div></div></div>
+          <div id="endlessOptions" class="mode-options" hidden><div class="small-help">Starts easy · New challenges every 20 seconds · 5 lives each</div></div>
+          <button id="startBtn" class="primary" type="button">▶ START BATTLE</button>
+          <small>Keyboard: A S D vs J K L · Touch: each player taps their half<br/>Red = avoid · Purple = hold · Green = tap twice · Gold = bonus</small>
+        </div>
+      </div>
+      <div id="pauseScreen" class="screen" hidden>
+        <div class="dialog"><span class="pill">Ⅱ PAUSED</span><h2>TAKE A BREATHER.</h2><p>Your scores and the beat are frozen. Resume when both rivals are ready.</p><button id="resumeBtn" class="primary" type="button">▶ RESUME GAME</button><div class="buttons-row"><button id="restartBtn" class="secondary" type="button">↻ RESTART</button><button id="menuBtn" class="secondary" type="button">⌂ MAIN MENU</button></div></div>
+      </div>
+      <div id="endScreen" class="screen" hidden>
+        <div class="dialog"><span class="pill">🏆 MATCH COMPLETE</span><h2 id="winTitle">WHAT A BATTLE!</h2><p id="winDescription">The final scores are in.</p><p class="result-sub" id="resultSub"></p><div class="result-score"><div><span id="resultName1">PLAYER 1</span><b style="color:#67e7ff" id="resultScore1">0</b></div><div><span id="resultName2">PLAYER 2</span><b style="color:#ff96d9" id="resultScore2">0</b></div></div><button id="nextLevelBtn" class="primary" type="button" hidden>▶ NEXT LEVEL</button><button id="againBtn" class="primary" type="button">↻ REMATCH</button><div class="buttons-row"><button id="endMenuBtn" class="secondary" type="button">⌂ CHANGE SETTINGS</button></div></div>
+      </div>
+    </div>
+    <div class="underarena"><div class="controls p1"><span class="key">A</span><span class="key">S</span><span class="key">D</span><span class="control-hint">PLAYER 1</span></div><div class="center-hint"><span id="dynamicHint">★ GOLD = BONUS · HIT ON THE LINE</span><br/><span id="seriesStatus">🏆 Series 0–0</span></div><div class="controls p2"><span class="control-hint">PLAYER 2</span><span class="key">J</span><span class="key">K</span><span class="key">L</span></div></div>
+  </main>
+  <div class="instructions"><span>✨ <b>PERFECT</b> hits = more points</span><span>⚡ <b>COMBOS</b> = multipliers</span><span>★ <b>GOLD</b> notes = bonus</span><span>☝ <b>TOUCH</b> supports two fingers</span><span>🟥 <b>RED</b> = avoid · 🟪 <b>PURPLE</b> = hold · 🟩 <b>GREEN</b> = double tap</span></div>
+  <footer class="page-footer">BEAT CLASH · Made for two players on one screen · Works without accounts or APIs</footer>
+</div>
+<script>
+(() => {
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const canvas = $('board'), ctx = canvas.getContext('2d'), arena = $('arena');
+  const dom = {
+    menu:$('menuScreen'), pause:$('pauseScreen'), end:$('endScreen'),
+    p1Name:$('p1Name'),p2Name:$('p2Name'),p1Score:$('p1Score'),p2Score:$('p2Score'),
+    p1Combo:$('p1Combo'),p2Combo:$('p2Combo'),p1Accuracy:$('p1Accuracy'),p2Accuracy:$('p2Accuracy'),
+    p1Lives:$('p1Lives'),p2Lives:$('p2Lives'),time:$('timeLeft'),status:$('clockStatus'),
+    modeLabel:$('hudModeLabel'),fill:$('momentumFill'),marker:$('momentumMarker'),
+    series:$('seriesStatus'),hint:$('dynamicHint')
+  };
+  const COLORS = ['#56dcff','#ff6ac5'];
+  const COUNT_IN=2600, HIT_WINDOWS=[62,112,165], PREVIEW=2200;
+  const LEVELS = [
+    {name:'Warm Up',bpm:88}, {name:'Speed Rush',bpm:116},
+    {name:'Double Trouble',bpm:120}, {name:'Danger Zone',bpm:126},
+    {name:'Hold It!',bpm:130}, {name:'Color Chaos',bpm:136},
+    {name:'Final Showdown',bpm:148}
+  ];
+  const KEY_MAP={KeyA:[0,0],KeyS:[0,1],KeyD:[0,2],KeyJ:[1,0],KeyK:[1,1],KeyL:[1,2]};
+  let width=0,height=0,ratio=1,audio=null,soundOn=true,lastFrame=0;
+  let selectedMode='levels', unlocked=readUnlock();
+  const heldKeys=new Set(), pointerMap=new Map(), holdCounts=[[0,0,0],[0,0,0]];
+  let game=newGame();
+
+  function readUnlock(){try{return Math.min(7,Math.max(1,Number(localStorage.getItem('beatclash_unlocked_v2'))||1));}catch(_){return 1;}}
+  function saveUnlock(value){ unlocked=Math.max(unlocked,Math.min(7,value));try{localStorage.setItem('beatclash_unlocked_v2',String(unlocked));}catch(_){}updateLevelChoices(); }
+  function newPlayer(name){return {name,score:0,combo:0,maxCombo:0,perfect:0,great:0,good:0,misses:0,hits:0,feedback:[],flash:[0,0,0],lives:5};}
+  function newGame(){return {phase:'menu',mode:'quick',level:1,stage:1,elapsed:0,roundMs:60000,bpm:116,notes:[],players:[newPlayer('Player 1'),newPlayer('Player 2')],nextNoteTime:1350,noteIndex:0,prevLane:-1,rand:null,nextBeat:0,beatCount:0,series:{wins:[0,0],ties:0,played:0},endReason:'time'};}
+  function seededRandom(seed){let v=seed>>>0;return()=>{v+=0x6D2B79F5;let t=v;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296;};}
+  function stageAt(t){return Math.min(7,1+Math.floor(Math.max(0,t)/20000));}
+  function bpmAt(t){if(game.mode==='quick')return game.bpm;if(game.mode==='levels')return LEVELS[game.level-1].bpm;return Math.min(180,LEVELS[stageAt(t)-1].bpm+Math.max(0,Math.floor((t-120000)/20000)+1)*4);}
+  function levelAt(t){return game.mode==='quick'?1:game.mode==='levels'?game.level:stageAt(t);}
+  function makeNote(time,lane,type){return {time,lane,type,state:[0,0],started:[0,0],holdMs:type==='hold'?460:0};}
+  function generateNotesThrough(upTo){
+    while(game.nextNoteTime<=upTo && (game.mode==='endless'||game.nextNoteTime<game.roundMs-350)){
+      const i=game.noteIndex, t=game.nextNoteTime, level=levelAt(t), rand=game.rand;
+      let lane=Math.floor(rand()*3);
+      if(lane===game.prevLane && rand()<.75)lane=(lane+1+Math.floor(rand()*2))%3;
+      game.prevLane=lane;
+      let type='normal';
+      if(level>=4&&i>3&&i%11===8)type='trap';
+      else if(level>=5&&i%9===5)type='hold';
+      else if(level>=6&&i%9===2)type='doubletap';
+      else if(i%10===9)type='gold';
+      game.notes.push(makeNote(t,lane,type));
+      if(level>=3&&i>4&&i%9===6){
+        const other=(lane+1+(rand()<.5?0:1))%3;
+        game.notes.push(makeNote(t,other,level>=7&&i%18===6?'gold':'normal'));
+      }
+      game.noteIndex++;
+      game.nextNoteTime+=60000/bpmAt(t);
+    }
+  }
+  function menuChoice(mode){
+    selectedMode=mode;
+    for(const btn of document.querySelectorAll('[data-mode]')){
+      const on=btn.dataset.mode===mode;btn.classList.toggle('chosen',on);btn.setAttribute('aria-pressed',String(on));
+    }
+    $('quickOptions').hidden=mode!=='quick';
+    $('levelOptions').hidden=mode!=='levels';
+    $('endlessOptions').hidden=mode!=='endless';
+    const words={levels:'Complete each level to unlock the next. Track round wins through Level 7.',endless:'Five lives each. New hazards every 20 seconds. Last player standing wins.',quick:'Choose your speed and time. Highest score wins.'};
+    $('modeDescription').textContent=words[mode];
+    syncMenuHeader();
+  }
+  function syncMenuHeader(){
+    if(game.phase!=='menu')return;
+    dom.modeLabel.textContent=selectedMode==='levels'?'LEVEL CHALLENGE':selectedMode==='endless'?'ENDLESS MADNESS':'QUICK BATTLE';
+    dom.time.textContent=selectedMode==='endless'?'0:00':selectedMode==='quick'?`${Math.floor(Number($('duration').value)/60)}:${String(Number($('duration').value)%60).padStart(2,'0')}`:'1:00';
+    dom.status.textContent='GET READY';
+  }
+  function updateLevelChoices(){
+    const select=$('levelSelect'), previous=Number(select.value)||1;
+    select.replaceChildren();
+    LEVELS.forEach((lev,i)=>{const opt=document.createElement('option');opt.value=String(i+1);opt.textContent=`${i+1}. ${lev.name}${i+1>unlocked?' 🔒':''}`;opt.disabled=i+1>unlocked;select.append(opt);});
+    select.value=String(Math.min(previous,unlocked));
+    $('unlockedInfo').textContent=`${unlocked} / 7 unlocked · Progress saves on this browser`;
+  }
+  function view(phase){
+    dom.menu.hidden=phase!=='menu';dom.pause.hidden=phase!=='paused';dom.end.hidden=phase!=='ended';
+    $('pauseBtn').hidden=!(phase==='active'||phase==='paused');
+    $('pauseBtn').textContent=phase==='paused'?'▶ RESUME':'Ⅱ PAUSE';
+  }
+  function setSoundLabel(){$('soundBtn').textContent=soundOn?'♫ SOUND ON':'♪ MUTED';$('soundBtn').setAttribute('aria-label',soundOn?'Mute sounds':'Unmute sounds');}
+  function unlockAudio(){if(!soundOn)return;try{if(!audio)audio=new (window.AudioContext||window.webkitAudioContext)();if(audio.state==='suspended')audio.resume().catch(()=>{});}catch(_){audio=null;}}
+  function tone(freq,duration=.12,wave='sine',volume=.07,offset=0,sweep=0){
+    if(!soundOn||!audio||audio.state!=='running')return;
+    const start=audio.currentTime+offset;
+    try{const o=audio.createOscillator(),g=audio.createGain();o.type=wave;o.frequency.setValueAtTime(freq,start);if(sweep)o.frequency.exponentialRampToValueAtTime(Math.max(25,sweep),start+duration);g.gain.setValueAtTime(.0001,start);g.gain.exponentialRampToValueAtTime(volume,start+.008);g.gain.exponentialRampToValueAtTime(.0001,start+duration);o.connect(g).connect(audio.destination);o.start(start);o.stop(start+duration+.025);}catch(_){}
+  }
+  function soundHit(player,lane,level,type){
+    if(level==='miss'){tone(130,.18,'sawtooth',.03,0,45);return;}
+    const pitches=player===0?[392,493.88,587.33]:[440,554.37,659.25];const freq=pitches[lane]*(type==='gold'?1.5:1);
+    tone(freq,.18,'sine',type==='gold'?.12:.078);tone(freq*2,.08,'triangle',.02);
+    if(type==='gold')tone(freq*1.25,.22,'triangle',.05,.045);
+  }
+  function beatSound(i){tone(i%2===0?105:215,i%2===0?.15:.06,i%2===0?'sine':'triangle',i%2===0?.042:.014,0,i%2===0?47:100);}
+  function clearInputs(){heldKeys.clear();pointerMap.clear();holdCounts[0].fill(0);holdCounts[1].fill(0);}
+  function startMatch(continueSeries=false){
+    unlockAudio();clearInputs();
+    const name1=$('name1').value.trim().slice(0,14)||'Player 1';
+    const name2=$('name2').value.trim().slice(0,14)||'Player 2';
+    const level=Math.max(1,Math.min(unlocked,Number($('levelSelect').value)||1));
+    const previous=continueSeries?game.series:{wins:[0,0],ties:0,played:0};
+    const roundMs=selectedMode==='quick'?(Number($('duration').value)||60)*1000:selectedMode==='levels'?60000:Infinity;
+    const bpm=selectedMode==='quick'?(Number($('speed').value)||116):selectedMode==='levels'?LEVELS[level-1].bpm:LEVELS[0].bpm;
+    game={phase:'active',mode:selectedMode,level,stage:selectedMode==='levels'?level:1,elapsed:0,roundMs,bpm,notes:[],players:[newPlayer(name1),newPlayer(name2)],nextNoteTime:1350,noteIndex:0,prevLane:-1,rand:seededRandom(0xBEE7+Math.floor(bpm)*37+level*13+(selectedMode==='quick'?roundMs:444)),nextBeat:0,beatCount:0,series:previous,endReason:'time'};
+    generateNotesThrough(PREVIEW+1400);
+    dom.p1Name.textContent=name1;dom.p2Name.textContent=name2;
+    dom.p1Lives.hidden=selectedMode!=='endless';dom.p2Lives.hidden=selectedMode!=='endless';
+    view('active');updateHud();lastFrame=performance.now();tone(659,.12,'triangle',.08);
+  }
+  function showMenu(){clearInputs();game.phase='menu';game.elapsed=0;view('menu');updateLevelChoices();syncMenuHeader();}
+  function pauseMatch(){if(game.phase!=='active')return;game.phase='paused';clearInputs();view('paused');dom.status.textContent='PAUSED';}
+  function resumeMatch(){if(game.phase!=='paused')return;game.phase='active';view('active');lastFrame=performance.now();unlockAudio();}
+  function seriesWinner(){const a=game.series.wins;return a[0]===a[1]?-1:a[0]>a[1]?0:1;}
+  function finishMatch(reason='time'){
+    if(game.phase!=='active')return;
+    game.phase='ended';game.endReason=reason;clearInputs();view('ended');
+    const [a,b]=game.players;
+    $('resultName1').textContent=a.name.toUpperCase();$('resultName2').textContent=b.name.toUpperCase();
+    $('resultScore1').textContent=a.score.toLocaleString();$('resultScore2').textContent=b.score.toLocaleString();
+    let winner=a.score===b.score?-1:a.score>b.score?0:1;
+    if(game.mode==='endless')winner=a.lives===b.lives?-1:a.lives>b.lives?0:1;
+    if(game.mode==='levels'){
+      game.series.played++;
+      if(winner===-1)game.series.ties++;else game.series.wins[winner]++;
+      if(game.level<7)saveUnlock(game.level+1);
+    }
+    const final=game.mode==='levels'&&game.level===7;
+    const champion=final?seriesWinner():winner;
+    $('winTitle').textContent=champion<0?(final?'SERIES DRAW! 🤝':"IT'S A TIE! 🤝"):
+      `${game.players[champion].name.toUpperCase()} ${final?'IS CHAMPION! 🏆':'WINS! 🏆'}`;
+    if(final){
+      $('winDescription').textContent=`Seven-level showdown complete! ${a.name}: ${game.series.wins[0]} wins · ${b.name}: ${game.series.wins[1]} wins · ${game.series.ties} ties.`;
+    }else if(game.mode==='levels'){
+      $('winDescription').textContent=`Level ${game.level} complete! ${game.level<7?'Level '+(game.level+1)+' unlocked.':'All levels cleared.'} Series: ${game.series.wins[0]}–${game.series.wins[1]} (${game.series.ties} ties).`;
+    }else if(game.mode==='endless'){
+      $('winDescription').textContent=winner<0?'Both players ran out of lives together!':`${game.players[winner].name} survived ${Math.floor(Math.max(0,game.elapsed-COUNT_IN)/1000)} seconds! Final stage: ${game.stage}.`;
+    }else $('winDescription').textContent=winner<0?'Identical scores. Time for a rematch!':`${game.players[winner].name} owned the beat with a ${game.players[winner].maxCombo}-note best combo.`;
+    $('resultSub').textContent=game.mode==='endless'?`LIVES LEFT: ${a.lives} vs ${b.lives}`:game.mode==='levels'?`LEVEL ${game.level} · ${LEVELS[game.level-1].name}`:'QUICK BATTLE';
+    $('nextLevelBtn').hidden=!(game.mode==='levels'&&game.level<7);
+    $('againBtn').textContent=game.mode==='levels'?'↻ REPLAY LEVEL':game.mode==='endless'?'↻ RETRY ENDLESS':'↻ REMATCH';
+    dom.status.textContent='GAME OVER';updateHud();
+    tone(523,.19,'triangle',.08);tone(659,.2,'triangle',.08,.14);tone(784,.3,'triangle',.075,.29);
+  }
+  function addFeedback(p,text,color,lane){p.feedback.push({text,color,lane,born:game.elapsed});if(p.feedback.length>9)p.feedback.shift();}
+  function registerMiss(playerIndex,lane,empty=false,reason='MISS'){
+    const p=game.players[playerIndex];if(game.mode==='endless'&&p.lives<=0)return;
+    p.combo=0;p.misses++;p.score=Math.max(0,p.score-(empty?25:0));p.flash[lane]=.46;
+    if(game.mode==='endless')p.lives=Math.max(0,p.lives-1);
+    addFeedback(p,reason==="MISS"?(empty?'TOO EARLY':'MISS'):reason,'#ff6d8b',lane);
+    soundHit(playerIndex,lane,'miss');
+  }
+  function reward(playerIndex,note,precision,baseOverride=null){
+    const p=game.players[playerIndex];const level=precision<=HIT_WINDOWS[0]?'perfect':precision<=HIT_WINDOWS[1]?'great':'good';
+    const base=baseOverride===null?(level==='perfect'?100:level==='great'?70:40):baseOverride;
+    p.combo++;p.hits++;p[level]++;p.maxCombo=Math.max(p.maxCombo,p.combo);
+    const multiplier=Math.min(4,1+Math.floor((p.combo-1)/10)*.5);
+    p.score+=Math.round((base+(note.type==='gold'?100:0))*multiplier);
+    p.flash[note.lane]=.26;
+    const word=note.type==='gold'?'★ BONUS!':note.type==='hold'?'HOLD ✓':note.type==='doubletap'?'DOUBLE ✓':level.toUpperCase();
+    addFeedback(p,word,note.type==='gold'?'#ffd77c':'#aaf7ff',note.lane);
+    soundHit(playerIndex,note.lane,level,note.type);
+  }
+  function isAlive(i){return game.mode!=='endless'||game.players[i].lives>0;}
+  function tap(playerIndex,lane){
+    if(game.phase!=='active'||game.elapsed<COUNT_IN||!isAlive(playerIndex))return;
+    const songMs=game.elapsed-COUNT_IN;
+    // Second tap in a double-tap note has priority over searching for new notes.
+    for(const note of game.notes){
+      if(note.type!=='doubletap'||note.lane!==lane||note.state[playerIndex]!==3)continue;
+      if(songMs-note.started[playerIndex]<=440){note.state[playerIndex]=1;reward(playerIndex,note,note.firstDiff[playerIndex]);return;}
+    }
+    let target=null,best=Infinity;
+    for(const note of game.notes){
+      if(note.state[playerIndex]!==0||note.lane!==lane)continue;
+      const diff=Math.abs(note.time-songMs);
+      if(diff<best){best=diff;target=note;}
+      if(note.time>songMs+HIT_WINDOWS[2])break;
+    }
+    if(!target||best>HIT_WINDOWS[2]){registerMiss(playerIndex,lane,true);return;}
+    if(target.type==='trap'){target.state[playerIndex]=2;registerMiss(playerIndex,lane,false,'TRAP!');return;}
+    if(target.type==='hold'){
+      target.state[playerIndex]=4;target.started[playerIndex]=songMs;
+      target.firstDiff??=[0,0];target.firstDiff[playerIndex]=best;
+      addFeedback(game.players[playerIndex],'HOLD!','#cda5ff',lane);tone(280,.09,'sine',.04);
+      return;
+    }
+    if(target.type==='doubletap'){
+      target.state[playerIndex]=3;target.started[playerIndex]=songMs;
+      target.firstDiff??=[0,0];target.firstDiff[playerIndex]=best;
+      addFeedback(game.players[playerIndex],'TAP AGAIN!','#a9ff95',lane);tone(510,.07,'triangle',.05);
+      return;
+    }
+    target.state[playerIndex]=1;reward(playerIndex,target,best);
+  }
+  function release(playerIndex,lane){
+    if(game.phase!=='active'||game.elapsed<COUNT_IN)return;
+    const songMs=game.elapsed-COUNT_IN;
+    for(const note of game.notes){
+      if(note.type!=='hold'||note.lane!==lane||note.state[playerIndex]!==4)continue;
+      if(songMs-note.started[playerIndex]>=note.holdMs){note.state[playerIndex]=1;reward(playerIndex,note,note.firstDiff[playerIndex],115);}
+      else {note.state[playerIndex]=2;registerMiss(playerIndex,lane,false,'HOLD LONGER');}
+    }
+  }
+  function holdDown(player,lane){holdCounts[player][lane]++;tap(player,lane);}
+  function holdUp(player,lane){holdCounts[player][lane]=Math.max(0,holdCounts[player][lane]-1);if(holdCounts[player][lane]===0)release(player,lane);}
+  function processNotes(songMs){
+    for(const note of game.notes){
+      if(note.time>songMs+HIT_WINDOWS[2])break;
+      for(let i=0;i<2;i++){
+        if(!isAlive(i))continue;
+        const state=note.state[i];
+        if(state===0&&note.time<songMs-HIT_WINDOWS[2]){
+          note.state[i]=2;
+          if(note.type==='trap'){game.players[i].score+=20;addFeedback(game.players[i],'DODGED!','#a5ffa1',note.lane);}
+          else registerMiss(i,note.lane);
+        }else if(state===3&&songMs-note.started[i]>440){note.state[i]=2;registerMiss(i,note.lane,false,'NEED 2 TAPS');}
+        else if(state===4&&songMs-note.started[i]>=note.holdMs){
+          // Count the hold only while that lane is still pressed.
+          note.state[i]=holdCounts[i][note.lane]>0?1:2;
+          if(note.state[i]===1)reward(i,note,note.firstDiff[i],115);
+          else registerMiss(i,note.lane,false,'HOLD LONGER');
+        }
+      }
+    }
+    // Keeping only active/recent notes prevents memory growth in Endless mode.
+    while(game.notes.length && game.notes[0].time<songMs-750)game.notes.shift();
+  }
+  function updateHud(){
+    for(let i=0;i<2;i++){
+      const p=game.players[i],id=i+1;
+      dom[`p${id}Score`].textContent=p.score.toLocaleString();dom[`p${id}Combo`].textContent=p.combo;
+      const denominator=p.hits+p.misses;
+      dom[`p${id}Accuracy`].textContent=denominator?`${Math.round(100*p.hits/denominator)}% ACCURACY`:'— ACCURACY';
+      dom[`p${id}Lives`].textContent=`♥ ${p.lives} LIVES`;
+    }
+    const [a,b]=game.players;
+    const share=a.score+b.score>0?Math.max(8,Math.min(92,a.score/(a.score+b.score)*100)):50;
+    dom.fill.style.width=`${share}%`;dom.marker.style.left=`${share}%`;
+    const songMs=Math.max(0,game.elapsed-COUNT_IN);
+    const sec=game.mode==='endless'?Math.floor(songMs/1000):Math.ceil(Math.max(0,game.roundMs-songMs)/1000);
+    dom.time.textContent=`${Math.floor(sec/60)}:${String(sec%60).padStart(2,'0')}`;
+    dom.modeLabel.textContent=game.mode==='endless'?`ENDLESS · STAGE ${game.stage}`:game.mode==='levels'?`LEVEL ${game.level}/7`:'QUICK BATTLE';
+    if(game.phase==='active')dom.status.textContent=game.elapsed<COUNT_IN?'COUNTDOWN':game.mode==='endless'?'SURVIVE!':'IN THE ZONE';
+    dom.series.textContent=game.mode==='levels'?`🏆 Series ${game.series.wins[0]}–${game.series.wins[1]}`:game.mode==='endless'?`⚡ ${Math.round(bpmAt(songMs))} BPM`:`⚡ ${game.bpm} BPM`;
+    const lev=game.mode==='endless'?game.stage:game.mode==='levels'?game.level:0;
+    dom.hint.textContent=lev>=6?'RED: AVOID · GREEN: TAP TWICE · PURPLE: HOLD':lev>=5?'RED: AVOID · PURPLE: HOLD':lev>=4?'RED TILES: DO NOT TAP':lev>=3?'TWO TILES CAN LAND TOGETHER':'★ GOLD = BONUS · HIT ON THE LINE';
+  }
+  function roundedRect(x,y,w,h,r){if(w<=0||h<=0)return;r=Math.max(0,Math.min(r,w/2,h/2));ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.closePath();}
+  function resizeCanvas(){const b=canvas.getBoundingClientRect();if(!b.width||!b.height)return;width=b.width;height=b.height;ratio=Math.min(window.devicePixelRatio||1,2);canvas.width=Math.round(width*ratio);canvas.height=Math.round(height*ratio);ctx.setTransform(ratio,0,0,ratio,0,0);}
+  function render(){
+    if(!width||!height)return;
+    ctx.clearRect(0,0,width,height);
+    const half=width/2,laneWidth=half/3,hitY=height-65,tileHeight=Math.max(27,Math.min(58,height*.12));
+    const arrival=1850,distance=hitY+tileHeight*.5,songMs=game.elapsed-COUNT_IN;
+    const left=ctx.createLinearGradient(0,0,half,height);left.addColorStop(0,'#111c32');left.addColorStop(1,'#0a1729');
+    const right=ctx.createLinearGradient(half,0,width,height);right.addColorStop(0,'#21132e');right.addColorStop(1,'#151126');
+    ctx.fillStyle=left;ctx.fillRect(0,0,half,height);ctx.fillStyle=right;ctx.fillRect(half,0,half,height);
+    for(let i=0;i<6;i++){const x=i*laneWidth;ctx.fillStyle=i%2===0?'#ffffff04':'#00000013';ctx.fillRect(x,0,laneWidth,height);if(i!==0){ctx.fillStyle='#cddfff1e';ctx.fillRect(x-.5,0,1,height);}}
+    for(let y=0;y<height;y+=42){ctx.fillStyle='#ffffff06';ctx.fillRect(0,y,width,1);}
+    ctx.fillStyle='#6f88d180';ctx.fillRect(half-2,0,4,height);
+    ctx.save();ctx.shadowBlur=18;ctx.shadowColor='#88a2ff';ctx.fillStyle='#c5a8ff';ctx.fillRect(half-1,0,2,height);ctx.restore();
+    for(let player=0;player<2;player++){
+      const start=player*half,accent=COLORS[player],isDead=game.mode==='endless'&&game.players[player].lives===0;
+      ctx.fillStyle=player===0?'#2edaff18':'#fc5fc918';ctx.fillRect(start,hitY-18,half,43);
+      ctx.save();ctx.shadowBlur=15;ctx.shadowColor=accent;ctx.fillStyle=accent;ctx.fillRect(start+4,hitY-1,half-8,3);ctx.restore();
+      for(let lane=0;lane<3;lane++){
+        const x=start+lane*laneWidth,flash=game.players[player].flash[lane];
+        if(flash>0){ctx.fillStyle=player===0?`rgba(89,221,255,${flash*.28})`:`rgba(255,109,204,${flash*.28})`;ctx.fillRect(x+2,hitY-40,laneWidth-4,87);}
+        roundedRect(x+5,hitY+12,laneWidth-10,Math.max(26,height-hitY-20),7);ctx.fillStyle=player===0?'#2c739143':'#92447943';ctx.fill();ctx.strokeStyle=player===0?'#47bce96e':'#fd75c66e';ctx.lineWidth=1;ctx.stroke();
+      }
+      ctx.save();ctx.fillStyle=player===0?'#a9ecff88':'#ffc5ee88';ctx.font='800 11px system-ui';ctx.textAlign='center';ctx.fillText(player===0?'PLAYER 1':'PLAYER 2',start+half/2,24);ctx.restore();
+      if(isDead){ctx.fillStyle='#0506109c';ctx.fillRect(start,0,half,height);ctx.fillStyle='#ffffff';ctx.font='900 19px system-ui';ctx.textAlign='center';ctx.fillText('OUT!',start+half/2,height*.45);}
+    }
+    if(game.phase!=='menu'){
+      for(const note of game.notes){
+        const until=note.time-songMs;if(until>arrival+100||until< -650)continue;
+        const y=hitY-(until/arrival)*distance;
+        if(y< -tileHeight-6||y>height+tileHeight+80)continue;
+        for(let player=0;player<2;player++){
+          const state=note.state[player];if(state===1||state===2)continue;
+          if(game.mode==='endless'&&!isAlive(player))continue;
+          const x=(player*3+note.lane)*laneWidth+5,w=laneWidth-10,t=y-tileHeight/2;
+          const colors=note.type==='gold'?['#fff2ae','#ffbf53','#de7c29']:note.type==='trap'?['#ff9c9c','#ff354e','#b20e40']:note.type==='hold'?['#ebafff','#a750ed','#6c22bc']:note.type==='doubletap'?['#ceffb0','#4fde83','#1a9a62']:player===0?['#71e8ff','#32c4ff','#0e8de6']:['#ffb1e4','#ff70c7','#ed3e9b'];
+          ctx.save();ctx.shadowBlur=note.type==='gold'?25:13;ctx.shadowColor=colors[1];
+          const grd=ctx.createLinearGradient(x,t,x+w,t+tileHeight);grd.addColorStop(0,colors[0]);grd.addColorStop(.52,colors[1]);grd.addColorStop(1,colors[2]);
+          roundedRect(x,t,w,tileHeight,Math.min(8,tileHeight*.19));ctx.fillStyle=grd;ctx.fill();ctx.shadowBlur=0;ctx.strokeStyle=colors[0];ctx.lineWidth=1.3;ctx.stroke();
+          ctx.fillStyle='#ffffff55';roundedRect(x+4,t+3,w-8,Math.min(5,tileHeight*.11),2);ctx.fill();
+          const symbol={gold:'★',trap:'✕',hold:'HOLD',doubletap:'2×'}[note.type];
+          if(symbol){ctx.textAlign='center';ctx.font=`950 ${symbol==='HOLD'?Math.max(9,Math.min(15,w*.21)):Math.min(25,tileHeight*.57)}px system-ui`;ctx.fillStyle=note.type==='trap'?'#ffffff':'#fff';ctx.shadowBlur=2;ctx.shadowColor='#000';ctx.fillText(symbol,x+w/2,t+tileHeight*.67);}
+          if(state===4){const progress=Math.max(0,Math.min(1,(songMs-note.started[player])/note.holdMs));ctx.fillStyle='#fff';roundedRect(x+4,t+tileHeight-9,(w-8)*progress,5,2);ctx.fill();}
+          if(state===3){ctx.fillStyle='#efffea';ctx.textAlign='center';ctx.font='900 10px system-ui';ctx.fillText('AGAIN',x+w/2,t+12);}
+          ctx.restore();
+        }
+      }
+      for(let player=0;player<2;player++){
+        const p=game.players[player],base=player*half;
+        for(const f of p.feedback){const age=game.elapsed-f.born;if(age>650)continue;ctx.save();ctx.globalAlpha=Math.max(0,1-age/650);ctx.textAlign='center';ctx.font=`950 ${Math.max(11,Math.min(18,laneWidth*.24))}px system-ui`;ctx.shadowColor=f.color;ctx.shadowBlur=8;ctx.fillStyle=f.color;ctx.fillText(f.text,base+(f.lane+.5)*laneWidth,hitY-54-age*.08);ctx.restore();}
+      }
+    }
+    if(game.phase==='active'&&game.elapsed<COUNT_IN){
+      const count=3-Math.floor(game.elapsed/800),txt=count>0?String(count):'GO!',size=Math.min(95,height*.24);
+      ctx.save();ctx.textAlign='center';ctx.textBaseline='middle';ctx.font=`950 ${size}px system-ui`;ctx.shadowBlur=30;ctx.shadowColor=count>0?'#bb8dff':'#63eaff';ctx.fillStyle='#ffffff';ctx.fillText(txt,width/2,height*.42);ctx.restore();
+    }
+  }
+  function tick(now){
+    const dt=Math.min(Math.max(0,now-lastFrame),65);lastFrame=now;
+    if(game.phase==='active'){
+      const before=game.elapsed;game.elapsed+=dt;
+      if(before<COUNT_IN){const oldTick=Math.floor(before/800),newTick=Math.floor(game.elapsed/800);if(newTick!==oldTick)tone(580-newTick*100,.08,'square',.022);}
+      const songMs=game.elapsed-COUNT_IN;
+      if(songMs>=0){
+        game.stage=game.mode==='endless'?stageAt(songMs):game.mode==='levels'?game.level:1;
+        generateNotesThrough(songMs+PREVIEW);
+        let beats=0;while(songMs>=game.nextBeat&&beats++<5){beatSound(game.beatCount++);game.nextBeat+=60000/bpmAt(songMs);}
+        processNotes(songMs);
+        if(game.mode==='endless'&&(game.players[0].lives===0||game.players[1].lives===0))finishMatch('survival');
+      }
+      for(const p of game.players){p.flash=p.flash.map(v=>Math.max(0,v-dt/1000));p.feedback=p.feedback.filter(f=>game.elapsed-f.born<650);}
+      updateHud();
+      if(game.phase==='active'&&game.mode!=='endless'&&songMs>=game.roundMs)finishMatch('time');
+    }
+    render();requestAnimationFrame(tick);
+  }
+  for(const btn of document.querySelectorAll('[data-mode]'))btn.addEventListener('click',()=>menuChoice(btn.dataset.mode));
+  $('duration').addEventListener('change',syncMenuHeader);
+  $('startBtn').addEventListener('click',()=>startMatch());
+  $('pauseBtn').addEventListener('click',()=>game.phase==='active'?pauseMatch():resumeMatch());
+  $('resumeBtn').addEventListener('click',resumeMatch);
+  $('restartBtn').addEventListener('click',()=>startMatch());
+  $('menuBtn').addEventListener('click',showMenu);
+  $('againBtn').addEventListener('click',()=>startMatch());
+  $('nextLevelBtn').addEventListener('click',()=>{if(game.mode!=='levels'||game.level>=7)return;$('levelSelect').value=String(game.level+1);startMatch(true);});
+  $('endMenuBtn').addEventListener('click',showMenu);
+  $('soundBtn').addEventListener('click',()=>{soundOn=!soundOn;setSoundLabel();if(soundOn)unlockAudio();});
+  window.addEventListener('keydown',e=>{
+    if(e.code==='Escape'&&game.phase==='active'){e.preventDefault();pauseMatch();return;}
+    if(e.code==='Escape'&&game.phase==='paused'){e.preventDefault();resumeMatch();return;}
+    if(!KEY_MAP[e.code]||game.phase!=='active')return;
+    e.preventDefault();if(e.repeat||heldKeys.has(e.code))return;heldKeys.add(e.code);holdDown(...KEY_MAP[e.code]);
+  });
+  window.addEventListener('keyup',e=>{if(!KEY_MAP[e.code])return;heldKeys.delete(e.code);holdUp(...KEY_MAP[e.code]);});
+  canvas.addEventListener('pointerdown',e=>{
+    if(game.phase!=='active')return;e.preventDefault();
+    const box=canvas.getBoundingClientRect(),x=e.clientX-box.left;
+    if(x<0||x>=box.width)return;
+    const player=x<box.width/2?0:1,lane=Math.min(2,Math.max(0,Math.floor((x-player*box.width/2)/(box.width/6))));
+    pointerMap.set(e.pointerId,[player,lane]);try{canvas.setPointerCapture(e.pointerId);}catch(_){}
+    holdDown(player,lane);
+  },{passive:false});
+  function pointerRelease(e){if(!pointerMap.has(e.pointerId))return;const [player,lane]=pointerMap.get(e.pointerId);pointerMap.delete(e.pointerId);holdUp(player,lane);}
+  canvas.addEventListener('pointerup',pointerRelease);canvas.addEventListener('pointercancel',pointerRelease);canvas.addEventListener('lostpointercapture',pointerRelease);
+  document.addEventListener('visibilitychange',()=>{if(document.hidden&&game.phase==='active')pauseMatch();});
+  window.addEventListener('blur',()=>{if(game.phase==='active')pauseMatch();});
+  window.addEventListener('resize',resizeCanvas);if('ResizeObserver'in window)new ResizeObserver(resizeCanvas).observe(arena);
+  updateLevelChoices();menuChoice('levels');setSoundLabel();view('menu');resizeCanvas();updateHud();syncMenuHeader();lastFrame=performance.now();requestAnimationFrame(tick);
+})();
+
+</script>
+</body>
+</html>
